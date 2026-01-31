@@ -2,6 +2,11 @@
 
 All notable changes to the "antigravity-quota-watch" extension will be documented in this file.
 
+## [0.0.13]
+
+- Identity: Updated author name to "Puvaan Raaj" and refreshed extension icon with a dark theme design.
+- UI: Added colorful syntax highlighting (Green/Red) to the status bar tooltip using Markdown diff blocks.
+
 ## [0.0.12]
 
 - UI: Added colorful syntax highlighting (Green/Red) to the status bar tooltip using Markdown diff blocks.
