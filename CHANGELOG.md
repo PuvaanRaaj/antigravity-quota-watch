@@ -2,6 +2,12 @@
 
 All notable changes to the "antigravity-quota-watch" extension will be documented in this file.
 
+## [1.0.1]
+
+- UI: Reduced visual noise by removing green highlighting for normal quotas (neutral text).
+- UI: Added explicit "Remaining" text to percentages to avoid confusion.
+- UI: Warnings are still highlighted in Red for visibility.
+
 ## [1.0.0] - First Major Release
 
 - **Official Release**: Polished UI, stable auto-discovery, and identity update.

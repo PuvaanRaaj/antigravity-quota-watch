@@ -310,11 +310,12 @@ async function updateQuota(outputChannel: vscode.OutputChannel, manual = false) 
                 const fraction = m.quotaInfo?.remainingFraction ?? 0;
                 const pct = Math.round(fraction * 100);
                 
-                // Color Logic: Red if low (< 30%), Green otherwise
-                const prefix = pct > 30 ? '+ ' : '- ';
+                // Color Logic: Red if low (< 30%), Neutral otherwise (to avoid "wall of green")
+                const isLow = pct <= 30;
+                const prefix = isLow ? '- ' : '  ';
                 
                 // Formatting
-                const name = m.label.padEnd(20, ' ');
+                const name = m.label.substring(0, 25).padEnd(25, ' ');
                 const bar = getProgressBar(pct, 10);
                 
                 // Reset Time
@@ -325,12 +326,11 @@ async function updateQuota(outputChannel: vscode.OutputChannel, manual = false) 
                     resetStr = ` (Resets ${time})`;
                 }
 
-                modelBlock += `${prefix}${name} [${bar}] ${pct}%${resetStr}\n`;
+                modelBlock += `${prefix}${name} [${bar}] ${pct}% Remaining${resetStr}\n`;
             });
             tooltip.appendCodeblock(modelBlock, 'diff');
         }
-        
-        // Footer (Clean, no debug info)
+        // Footer
         tooltip.appendMarkdown(`---\n`);
         tooltip.appendMarkdown(`Last Updated: ${timeStr} | Next Refresh: ~${nextStr}`);
         
