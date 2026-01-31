@@ -4,10 +4,12 @@
 
 ## Features
 
-- **Live Quota Monitoring**: See your current quota percentage at a glance.
+- **Live Quota Monitoring**: See your current quota percentage or token usage at a glance.
+- **Visual Progress Bars**: Tooltips and lists now feature ASCII progress bars (e.g., `[████░░░░░░] 40%`) for easy visualization.
+- **Global Token Counter**: Track your global Prompt Credits (e.g., `4500 / 5000`).
 - **Low Quota Warning**: The status bar item turns red when your quota drops below 20%.
 - **Reset Timer**: Hover over the status bar item to see when your quota resets.
-- **Configurable**: Customize the polling interval and endpoint.
+- **Detailed View**: Click the status bar item to see a searchable list of all models and their specific quotas.
 
 ## Configuration
 

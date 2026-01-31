@@ -2,8 +2,9 @@
     "name": "antigravity-quota-watch",
     "displayName": "Antigravity Quota Watch",
     "description": "Monitor your Antigravity quota from the VS Code status bar.",
-    "version": "0.0.2",
+    "version": "0.0.12",
     "publisher": "puvaan",
+    "icon": "icon.png",
     "repository": {
         "type": "git",
         "url": "https://github.com/PuvaanRaaj/antigravity-quota-watch"
@@ -12,7 +13,8 @@
         "vscode": "^1.90.0"
     },
     "categories": [
-        "Other"
+        "Machine Learning",
+        "Visualization"
     ],
     "license": "MIT",
     "activationEvents": [
