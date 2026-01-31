@@ -25,6 +25,11 @@ This extension can be configured via VS Code settings:
 
 ## Release Notes
 
-### 0.0.1
+### 1.0.0
 
-- Initial release with basic monitoring and notifications.
+- **Official Release**: The first stable release of Antigravity Quota Watch.
+- **Monitor with Ease**: Live status bar updates, detailed tooltips, and rapid auto-discovery.
+- **Visuals**: ASCII progress bars and color-coded status for at-a-glance monitoring.
+- **Identity**: Polished branding with a new dark-theme icon.
+
+> For a full list of changes, please see the [CHANGELOG](CHANGELOG.md).

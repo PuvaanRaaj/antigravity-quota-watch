@@ -2,6 +2,18 @@
 
 All notable changes to the "antigravity-quota-watch" extension will be documented in this file.
 
+## [1.0.0] - First Major Release
+
+- **Official Release**: Polished UI, stable auto-discovery, and identity update.
+- **UI**: Visual progress bars, specific reset times, and smart color coding.
+- **Identity**: Published by Puvaan Raaj with new dark theme branding.
+
+## [0.0.14]
+
+- UI: Removed technical debug details (Port/Token) from tooltip for a cleaner look.
+- Feature: Added specific reset times for each model in the tooltip.
+- UI: Refined color thresholds (Green/Red) and formatting.
+
 ## [0.0.13]
 
 - Identity: Updated author name to "Puvaan Raaj" and refreshed extension icon with a dark theme design.

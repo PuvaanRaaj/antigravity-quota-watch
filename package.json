@@ -2,7 +2,7 @@
     "name": "antigravity-quota-watch",
     "displayName": "Antigravity Quota Watch",
     "description": "Monitor your Antigravity quota from the VS Code status bar.",
-    "version": "0.0.13",
+    "version": "1.0.0",
     "publisher": "puvaan",
     "author": {
         "name": "Puvaan Raaj"

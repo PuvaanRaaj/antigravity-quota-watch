@@ -304,25 +304,35 @@ async function updateQuota(outputChannel: vscode.OutputChannel, manual = false) 
         const quotaModels = configs.filter(m => m.quotaInfo);
         if (quotaModels.length > 0) {
             tooltip.appendMarkdown(`**Models**\n`);
-            // We can't put the whole list in one block if we want custom links/bolding, 
-            // but for color, one big block is best.
+    
             let modelBlock = '';
             quotaModels.forEach(m => {
                 const fraction = m.quotaInfo?.remainingFraction ?? 0;
                 const pct = Math.round(fraction * 100);
-                // Green if > 20%, Red if <= 20%
-                const prefix = pct > 20 ? '+ ' : '- ';
-                // Pad label for alignment (simple logic)
-                const paddedLabel = m.label.padEnd(25, ' ');
-                modelBlock += `${prefix}${paddedLabel} [${getProgressBar(pct, 10)}] ${pct}%\n`;
+                
+                // Color Logic: Red if low (< 30%), Green otherwise
+                const prefix = pct > 30 ? '+ ' : '- ';
+                
+                // Formatting
+                const name = m.label.padEnd(20, ' ');
+                const bar = getProgressBar(pct, 10);
+                
+                // Reset Time
+                let resetStr = '';
+                if (m.quotaInfo?.resetTime) {
+                    const date = new Date(m.quotaInfo.resetTime);
+                    const time = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    resetStr = ` (Resets ${time})`;
+                }
+
+                modelBlock += `${prefix}${name} [${bar}] ${pct}%${resetStr}\n`;
             });
             tooltip.appendCodeblock(modelBlock, 'diff');
         }
         
-        // Tech details footer
+        // Footer (Clean, no debug info)
         tooltip.appendMarkdown(`---\n`);
-        tooltip.appendMarkdown(`Last Updated: ${timeStr} | Next Refresh: ~${nextStr}\n`);
-        tooltip.appendMarkdown(`$(server) Port: ${port} | $(key) Token: ${processInfo.csrfToken.substring(0,4)}...`);
+        tooltip.appendMarkdown(`Last Updated: ${timeStr} | Next Refresh: ~${nextStr}`);
         
         myStatusBarItem.tooltip = tooltip;
         myStatusBarItem.show();
