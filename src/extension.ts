@@ -157,6 +157,20 @@ function getProgressBar(percentage: number, width: number = 10): string {
     return '█'.repeat(filled) + '░'.repeat(empty);
 }
 
+// Helper to get relative time
+function getTimeRemaining(targetDateStr: string): string {
+    const target = new Date(targetDateStr);
+    const now = new Date();
+    const diffMs = target.getTime() - now.getTime();
+    
+    if (diffMs <= 0) return 'Now';
+    
+    const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    
+    return `${diffHrs}h ${diffMins}m`;
+}
+
 async function showQuotaDetails(outputChannel: vscode.OutputChannel) {
     if (!cachedResponse) {
         vscode.window.showInformationMessage('No quota data available yet. Waiting for connection...');
@@ -279,8 +293,7 @@ async function updateQuota(outputChannel: vscode.OutputChannel, manual = false) 
         const now = new Date();
         const nextRefresh = new Date(now.getTime() + intervalSeconds * 1000);
         const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const nextStr = nextRefresh.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
+        
         // --- Tooltip ---
         const tooltip = new vscode.MarkdownString();
         tooltip.isTrusted = true;
@@ -294,45 +307,47 @@ async function updateQuota(outputChannel: vscode.OutputChannel, manual = false) 
              const pct = total > 0 ? (available / total) * 100 : 0;
              const usedPct = 100 - pct;
              
-             tooltip.appendMarkdown(`**Global Credits**\n`);
-             // Use diff syntax for color: + is Green, - is Red
-             tooltip.appendCodeblock(`+ Available: ${available.toLocaleString()} (${Math.floor(pct)}%)\n- Used:      ${Math.floor(usedPct)}%`, 'diff');
-             tooltip.appendMarkdown(`\`${getProgressBar(pct, 20)}\`\n\n`);
+             tooltip.appendMarkdown(`**Global Credits**\n\n`);
+             tooltip.appendMarkdown(`| Available | Used | Balance |\n|:--|:--|:--|\n`);
+             tooltip.appendMarkdown(`| **${available.toLocaleString()}** | ${Math.floor(usedPct)}% | \`${getProgressBar(pct, 15)}\` |\n\n`);
         }
 
         // Models Section
         const quotaModels = configs.filter(m => m.quotaInfo);
         if (quotaModels.length > 0) {
-            tooltip.appendMarkdown(`**Models**\n`);
-    
-            let modelBlock = '';
+            tooltip.appendMarkdown(`**Models**\n\n`);
+            
+            tooltip.appendMarkdown(`| | Model | Quota | Reset |\n|:--|:--|:--|:--|\n`);
+            
             quotaModels.forEach(m => {
                 const fraction = m.quotaInfo?.remainingFraction ?? 0;
                 const pct = Math.round(fraction * 100);
                 
-                // Color Logic: Red if low (< 30%), Neutral otherwise (to avoid "wall of green")
-                const isLow = pct <= 30;
-                const prefix = isLow ? '- ' : '  ';
+                // Status Icon
+                let icon = '🟢';
+                if (pct <= 50) icon = '🟡';
+                if (pct <= 20) icon = '🔴';
                 
-                // Formatting
-                const name = m.label.substring(0, 25).padEnd(25, ' ');
-                const bar = getProgressBar(pct, 10);
+                // Bar
+                const bar = getProgressBar(pct, 8);
                 
-                // Reset Time
-                let resetStr = '';
+                // Reset Time (Count down)
+                let resetStr = '-';
                 if (m.quotaInfo?.resetTime) {
-                    const date = new Date(m.quotaInfo.resetTime);
-                    const time = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    resetStr = ` (Resets ${time})`;
+                    resetStr = getTimeRemaining(m.quotaInfo.resetTime);
                 }
 
-                modelBlock += `${prefix}${name} [${bar}] ${pct}% Remaining${resetStr}\n`;
+                // Truncate name
+                const name = m.label.length > 22 ? m.label.substring(0, 20) + '..' : m.label;
+                
+                tooltip.appendMarkdown(`| ${icon} | ${name} | \`${bar}\` ${pct}% | ${resetStr} |\n`);
             });
-            tooltip.appendCodeblock(modelBlock, 'diff');
+            tooltip.appendMarkdown(`\n`);
         }
-        // Footer
+        
+        // Footer (Clean)
         tooltip.appendMarkdown(`---\n`);
-        tooltip.appendMarkdown(`Last Updated: ${timeStr} | Next Refresh: ~${nextStr}`);
+        tooltip.appendMarkdown(`Last Updated: ${timeStr}`);
         
         myStatusBarItem.tooltip = tooltip;
         myStatusBarItem.show();

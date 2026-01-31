@@ -2,6 +2,12 @@
 
 All notable changes to the "antigravity-quota-watch" extension will be documented in this file.
 
+## [1.0.2]
+
+- UI: Switched to a unified Table Layout for perfect alignment.
+- UI: Added Green (🟢), Yellow (🟡), and Red (🔴) status icons.
+- UI: Switched to "Countdown" timers (e.g., `4h 10m`) instead of absolute times for better readability.
+
 ## [1.0.1]
 
 - UI: Reduced visual noise by removing green highlighting for normal quotas (neutral text).
