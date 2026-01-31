@@ -1,0 +1,79 @@
+{
+    "name": "antigravity-quota-watch",
+    "displayName": "Antigravity Quota Watch",
+    "description": "Monitor your Antigravity quota from the VS Code status bar.",
+    "version": "0.0.1",
+    "publisher": "puvaan",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/PuvaanRaaj/antigravity-quota-watch"
+    },
+    "engines": {
+        "vscode": "^1.90.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "onStartupFinished"
+    ],
+    "main": "./dist/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "ag-quota.refresh",
+                "title": "Quota: Refresh Now",
+                "category": "Antigravity"
+            }
+        ],
+        "configuration": {
+            "title": "Antigravity Quota Watch",
+            "properties": {
+                "antigravity.endpoint": {
+                    "type": "string",
+                    "default": "http://localhost:9222/v1/status",
+                    "description": "The URL to poll for Antigravity status."
+                },
+                "antigravity.pollInterval": {
+                    "type": "number",
+                    "default": 120,
+                    "description": "Polling interval in seconds."
+                },
+                "antigravity.lowQuotaThreshold": {
+                    "type": "number",
+                    "default": 20,
+                    "description": "Percentage threshold to show low quota warning."
+                }
+            }
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run package",
+        "compile": "npm run check-types && npm run lint && node esbuild.js",
+        "watch": "npm-run-all -p watch:*",
+        "watch:esbuild": "node esbuild.js --watch",
+        "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+        "package": "npm run check-types && npm run lint && node esbuild.js --production",
+        "compile-tests": "tsc -p . --outDir out",
+        "watch-tests": "tsc -p . -w --outDir out",
+        "pretest": "npm run compile-tests && npm run compile && npm run lint",
+        "check-types": "tsc --noEmit",
+        "lint": "eslint src --ext ts",
+        "test": "vscode-test"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.90.0",
+        "@types/node": "20.x",
+        "@typescript-eslint/eslint-plugin": "^7.1.0",
+        "@typescript-eslint/parser": "^7.1.0",
+        "eslint": "^8.57.0",
+        "typescript": "^5.3.3",
+        "ts-loader": "^9.5.1",
+        "webpack": "^5.90.3",
+        "webpack-cli": "^5.1.4",
+        "@vscode/test-cli": "^0.0.6",
+        "@vscode/test-electron": "^2.3.9",
+        "esbuild": "^0.20.1",
+        "npm-run-all": "^4.1.5"
+    }
+}
