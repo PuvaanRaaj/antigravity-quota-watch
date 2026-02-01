@@ -2,6 +2,16 @@
 
 All notable changes to the "antigravity-quota-watch" extension will be documented in this file.
 
+## [1.1.1] - Windows 11 Compatibility
+
+- **Fix**: PowerShell (`Get-CimInstance`) is now the primary method for Windows 10/11.
+- **Fallback**: wmic is retained as a fallback for older Windows versions.
+
+## [1.1.0] - Windows Support
+
+- **Feature**: Added Windows support for process discovery using `wmic` and `netstat`.
+- **Feature**: Platform-aware logic (`process.platform`) now correctly dispatches to OS-specific implementations.
+
 ## [1.0.2]
 
 - UI: Switched to a unified Table Layout for perfect alignment.

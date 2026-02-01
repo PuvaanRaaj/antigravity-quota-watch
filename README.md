@@ -25,6 +25,11 @@ This extension can be configured via VS Code settings:
 
 ## Release Notes
 
+### 1.1.0
+
+- **Windows Support**: Added platform-specific process discovery for Windows.
+- **Cross-Platform**: Now works on macOS, Linux, **and** Windows.
+
 ### 1.0.0
 
 - **Official Release**: The first stable release of Antigravity Quota Watch.

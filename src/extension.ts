@@ -110,6 +110,13 @@ export function deactivate() {
 }
 
 async function findAntigravityProcess(outputChannel: vscode.OutputChannel): Promise<ProcessInfo | null> {
+    if (process.platform === 'win32') {
+        return findAntigravityProcessWindows(outputChannel);
+    }
+    return findAntigravityProcessUnix(outputChannel);
+}
+
+async function findAntigravityProcessUnix(outputChannel: vscode.OutputChannel): Promise<ProcessInfo | null> {
     try {
         // macOS/Linux find process
         const cmd = 'ps -ww -eo pid,args | grep "language_server" | grep -v grep';
@@ -129,12 +136,81 @@ async function findAntigravityProcess(outputChannel: vscode.OutputChannel): Prom
             }
         }
     } catch (e: any) {
-        outputChannel.appendLine(`Error scanning processes: ${e.message}`);
+        outputChannel.appendLine(`Error scanning processes (Unix): ${e.message}`);
+    }
+    return null;
+}
+
+async function findAntigravityProcessWindows(outputChannel: vscode.OutputChannel): Promise<ProcessInfo | null> {
+    // Try PowerShell first (Windows 10+), fallback to wmic (legacy)
+    let result = await findAntigravityProcessPowerShell(outputChannel);
+    if (result) return result;
+    
+    outputChannel.appendLine('PowerShell method failed, trying wmic fallback...');
+    return findAntigravityProcessWmic(outputChannel);
+}
+
+async function findAntigravityProcessPowerShell(outputChannel: vscode.OutputChannel): Promise<ProcessInfo | null> {
+    try {
+        // PowerShell: Get-CimInstance for Windows 10/11
+        const cmd = 'powershell -NoProfile -Command "Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like \'*language_server*\' } | Select-Object ProcessId, CommandLine | ConvertTo-Json"';
+        const { stdout } = await execAsync(cmd);
+        
+        if (!stdout.trim()) return null;
+        
+        // Parse JSON output (can be array or single object)
+        const parsed = JSON.parse(stdout);
+        const processes = Array.isArray(parsed) ? parsed : [parsed];
+        
+        for (const proc of processes) {
+            const cmdLine = proc.CommandLine || '';
+            if (cmdLine.includes('--csrf_token') && cmdLine.includes('antigravity')) {
+                const tokenMatch = cmdLine.match(/--csrf_token[=\s]+([a-zA-Z0-9-]+)/);
+                if (tokenMatch) {
+                    outputChannel.appendLine(`Found Antigravity process (PowerShell): PID=${proc.ProcessId}`);
+                    return { pid: proc.ProcessId, csrfToken: tokenMatch[1] };
+                }
+            }
+        }
+    } catch (e: any) {
+        outputChannel.appendLine(`PowerShell process scan failed: ${e.message}`);
+    }
+    return null;
+}
+
+async function findAntigravityProcessWmic(outputChannel: vscode.OutputChannel): Promise<ProcessInfo | null> {
+    try {
+        // WMIC fallback for older Windows
+        const cmd = 'wmic process where "name like \'%language_server%\'" get ProcessId,CommandLine /format:list';
+        const { stdout } = await execAsync(cmd);
+        
+        const blocks = stdout.split('\n\n').filter(b => b.trim());
+        for (const block of blocks) {
+            if (block.includes('--csrf_token') && block.includes('antigravity')) {
+                const pidMatch = block.match(/ProcessId=(\d+)/i);
+                const tokenMatch = block.match(/--csrf_token[=\s]+([a-zA-Z0-9-]+)/);
+                
+                if (pidMatch && tokenMatch) {
+                    const pid = parseInt(pidMatch[1], 10);
+                    outputChannel.appendLine(`Found Antigravity process (wmic): PID=${pid}`);
+                    return { pid, csrfToken: tokenMatch[1] };
+                }
+            }
+        }
+    } catch (e: any) {
+        outputChannel.appendLine(`wmic process scan failed: ${e.message}`);
     }
     return null;
 }
 
 async function findListeningPort(pid: number, outputChannel: vscode.OutputChannel): Promise<number | null> {
+    if (process.platform === 'win32') {
+        return findListeningPortWindows(pid, outputChannel);
+    }
+    return findListeningPortUnix(pid, outputChannel);
+}
+
+async function findListeningPortUnix(pid: number, outputChannel: vscode.OutputChannel): Promise<number | null> {
     try {
         // macOS lsof
         const cmd = `lsof -nP -a -iTCP -sTCP:LISTEN -p ${pid}`;
@@ -146,7 +222,33 @@ async function findListeningPort(pid: number, outputChannel: vscode.OutputChanne
             return parseInt(match[1], 10);
         }
     } catch (e: any) {
-        outputChannel.appendLine(`Error finding port for PID ${pid}: ${e.message}`);
+        outputChannel.appendLine(`Error finding port for PID ${pid} (Unix): ${e.message}`);
+    }
+    return null;
+}
+
+async function findListeningPortWindows(pid: number, outputChannel: vscode.OutputChannel): Promise<number | null> {
+    try {
+        // Windows: use netstat to find listening ports for a specific PID
+        const cmd = `netstat -ano | findstr /R "LISTENING.*${pid}"`;
+        const { stdout } = await execAsync(cmd);
+        
+        // netstat output: TCP  0.0.0.0:PORT  0.0.0.0:0  LISTENING  PID
+        const lines = stdout.split('\n');
+        for (const line of lines) {
+            // Match lines that end with our PID
+            const parts = line.trim().split(/\s+/);
+            if (parts.length >= 5 && parts[4] === String(pid)) {
+                // Extract port from local address (e.g., 0.0.0.0:59123)
+                const localAddr = parts[1];
+                const portMatch = localAddr.match(/:(\d+)$/);
+                if (portMatch) {
+                    return parseInt(portMatch[1], 10);
+                }
+            }
+        }
+    } catch (e: any) {
+        outputChannel.appendLine(`Error finding port for PID ${pid} (Windows): ${e.message}`);
     }
     return null;
 }
